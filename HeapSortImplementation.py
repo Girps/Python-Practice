@@ -1,5 +1,6 @@
 
 from enum import Enum 
+import copy
 
 class MODES(Enum): 
     MAX = 0 
@@ -15,27 +16,48 @@ print(list)
 
 class Heap:
 
-    class Node : 
+    # Inner Node class
+    class Node :
+        __value = None
+        __key = None 
         def __init__(self,v,k): 
-            self.value = v
-            self.key = k
+            self.__value = v
+            self.__key = k
         def __str__ (self):
-            str = '(' + str(self.key) + ',' + str(self.value) + ')'
+            str = '(' + str(self.__key) + ',' + str(self.__value) + ')'
         def __eq__(self, other): 
-            if (self.value == other.value) : 
+            if (self.__value == other.__value) : 
                 return True 
             else : 
                 return False
+        def __lt__(self,other):
+            return (self.__key < other.__key)
+
+        def __gt__(self,other):
+            return (self.__key > other.__key)
+        
         def getStr(self):
-            return  '(' + str(self.key) + ',' + str(self.value) + ')'
+            return  '( v: ' + str(self.__value) + ',' + " k: "+  str(self.__key) + ')'
+        def getKey(self):
+            return self.__key
+        def getValue(self):
+            return self.__value
+        def setKey(self, key):
+            self.__key = key
+        def setValue(self,value):
+            self.__value = value
+
+    __A = None
+    __mode = None
     # Build heap
     def __init__(self,A, mode):
 
        # convert it into pairs, (key,value)
+       nodeList = [None] * len(A)
        for i in range(0,len(A)): 
-           A[i] = self.Node(A[i],A[i])
-       self.A = A
-       self.mode = mode 
+           nodeList[i] = self.Node(A[i],A[i])
+       self.__A = nodeList
+       self.__mode = mode 
        match mode: 
            case MODES.MAX: 
                 self.BUILD_MAX_HEAP()
@@ -45,53 +67,63 @@ class Heap:
 
     # Remove Max
     def MAX_HEAP_EXTRACT_MAX(self): 
-        max = self.ROOT 
-        n = len(self.A) - 1 
-        self.A[1] = self.A[n]
-        self.A.pop()
+        max = self.ROOT() 
+        n = len(self.__A) - 1 
+        self.__A[1] = self.__A[n]
+        self.__A.pop()
         # ensure property is mainted
-        self.MAX_HEAPIFY(self.A,1) 
+        self.MAX_HEAPIFY(self.__A,1) 
         return max
     
-    def MAX_HEAP_INSERT(self,x,n): 
-        pass
+    def MIN_HEAP_EXTRACT_MIN(self):
+        min = self.ROOT() 
+        n = len(self.__A) - 1 
+        self.__A[1] = self.__A[n]
+        self.__A.pop()
+        # ensure property is mainted
+        self.MIN_HEAPIFY(self.__A,1) 
+        return min
     
     def ROOT(self):
-        if (self.A == None or len(self.A) <= 1) : 
+        if (self.__A == None or len(self.__A) <= 1) : 
             raise Exception("Out of bounds")
-        return self.A[1] 
+        return self.__A[1] 
 
     # Heap sort given Array 
     def HEAP_SORT(self,A,n):
-        self.A = A
+        self.__A = copy.deepcopy(A)
         result = []
-        match self.mode: 
+        match self.__mode: 
             case MODES.MAX : 
                 self.BUILD_MAX_HEAP()
+                print(self)
                 for i in range(n,2,-1):
-                    self.SWAP(self.A,1,i)
-                    result.append(self.A.pop())
-                    self.MAX_HEAPIFY(self.A,1)
-                
+                    self.SWAP(self.__A,1,i)
+                    result.append(self.__A.pop())
+                    self.MAX_HEAPIFY(self.__A,1)
+                result.append(self.MAX_HEAP_EXTRACT_MAX())
+                result.append(self.MAX_HEAP_EXTRACT_MAX())
+
             case MODES.MIN : 
                 self.BUILD_MIN_HEAP()
                 for i in range(n,2,-1):
-                    self.SWAP(A,1,i)
-                    result.append(self.A.pop())
-                    self.MIN_HEAPIFY(self.A,i) 
-        result.append(self.A.pop())
-        result.append(self.A.pop())
-        result.append(self.A.pop())
-        self.A = result
+                    self.SWAP(self.__A,1,i)
+                    result.append(self.__A.pop())
+                    self.MIN_HEAPIFY(self.__A,1) 
+                result.append(self.MIN_HEAP_EXTRACT_MIN())
+                result.append(self.MIN_HEAP_EXTRACT_MIN())
+        result.append(self.__A.pop())
+        self.__A = result
 
     # Build Min heap 
     def BUILD_MIN_HEAP(self):
         list = [ self.Node(0,"Senteniel") ] 
-        list.extend(self.A)
+        list.extend(self.__A)
         r = len(list)     
+        
         for i in range (( r // 2 ) ,0, -1): 
             self.MIN_HEAPIFY(list,i)
-        self.A = list
+        self.__A = list
 
     # Maintain min heap
     def MIN_HEAPIFY(self,list,i): 
@@ -99,12 +131,12 @@ class Heap:
         r = self.RIGHT(i)
         smallest = i; 
         # Get index with largest to swap and Heapify 
-        if ( l <= len(list)-1 and list[i].key > list[l].key) : 
+        if ( l <= len(list)-1 and list[i] > list[l]) : 
             smallest =  l
         else : 
             smallest = i
         # Check right child 
-        if ( r <= len(list)-1 and list[smallest].key > list[r].key) : 
+        if ( r <= len(list)-1 and list[smallest] > list[r]) : 
             smallest = r
         # now check if largest is no longer root
         if (smallest != i) :
@@ -116,15 +148,13 @@ class Heap:
     # Build Max heap 
     def BUILD_MAX_HEAP(self):
         list = [ self.Node(0,"Senteniel")]
-        list.extend(self.A)
+        list.extend(self.__A)
         r = len(list)
        
-        for i in range(0,len(list)):
-            print(list[i].getStr())
 
         for i in range (( r // 2 ) ,0, -1): 
             self.MAX_HEAPIFY(list,i)
-        self.A = list 
+        self.__A = list 
     
     # Maintain min heap
     def MAX_HEAPIFY(self,list,i): 
@@ -132,12 +162,12 @@ class Heap:
         r = self.RIGHT(i)
         largest = i; 
         # Get index with largest to swap and Heapify 
-        if ( l <= len(list)-1 and list[i].key < list[l].key) : 
+        if ( l <= len(list)-1 and list[i] < list[l]) : 
             largest =  l
         else : 
             largest = i
         # Check right child 
-        if ( r <= len(list)-1 and list[largest].key < list[r].key) : 
+        if ( r <= len(list)-1 and list[largest] < list[r]) : 
             largest = r
         # now check if largest is no longer root
         if (largest != i) :
@@ -160,40 +190,87 @@ class Heap:
 
     def __str__(self) :
         result = '[';  
-        for i in range(0, len(self.A)-1) : 
-            result += self.A[i].getStr() + ","
-        result += self.A[len(self.A)-1].getStr() + "]"
+        size = self.getSize()
+        for i in range(0, size) :
+            if (self.__A[i].getKey() == "Senteniel") : 
+                continue
+            result += self.__A[i].getStr() + ","
+        result += self.__A[len(self.__A)-1].getStr() + "]"
         return result; 
 
     # Increase key of given node 
     def MAX_HEAP_INCREASE_KEY(self,x,key):
-        if (key < x.key):
+        if (key < x.getKey()):
             Exception("new key is smaller then node.key")
-        x.key = key 
+        x.setKey(key) 
         # find indice where x occurs
         indice = -1  
-        for i in range(1,len(self.A)) : 
-            indice = i
+        for i in range(1,len(self.__A)) :
+            # Found index  
+            if(x == self.__A[i]) :
+                indice = i 
+        # update index
+        self.__A[indice] = x
         # Now exchange with root
-        while (i > 1 and self.A[i//2].key < self.A[i].key) : 
-            self.SWAP(self.A,i//2,i)
-            i = (i // 2) 
+        while (indice > 1 and self.__A[indice//2] < self.__A[indice]) : 
+            self.SWAP(self.__A,indice//2,indice)
+            indice = (indice // 2) 
 
+    def MIN_HEAP_DECREASE_KEY(self,x,key):
+         if (key > x.getKey()):
+            Exception("new key is bigger then node.key")
+         x.setKey(key) 
+         # find indice where x occurs
+         indice = -1  
+         for i in range(1,len(self.__A)) :
+            # Found index  
+            if(x == self.__A[i]) :
+                indice = i 
+        # update index
+         self.__A[indice] = x
+        # Now exchange with root
+         while (indice > 1 and self.__A[indice//2] > self.__A[indice]) : 
+            self.SWAP(self.__A,indice//2,indice)
+            indice = (indice // 2) 
+
+    def MIN_HEAP_INSERT(self,x):
+            # x is a node 
+            infinty = float('inf')
+            key = x.getKey()
+            x.setKey(infinty)
+            self.__A.append(None)
+            self.__A[len(self.__A)-1] = x
+            self.MIN_HEAP_DECREASE_KEY(x,key)
+    
     def MAX_HEAP_INSERT(self,x):
             # x is a node 
             infinty = float('-inf')
-            key = x.key 
-            x.key = infinty
-            self.A.append(None)
-            self.A[len(self.A)-1] = x
+            key = x.getKey() 
+            x.setKey( infinty)
+            self.__A.append(None)
+            self.__A[len(self.__A)-1] = x
             self.MAX_HEAP_INCREASE_KEY(x,key)
+    
+    def getSize(self) :
+        return len( self.__A ) - 1
+    
+    def getList(self) : 
+        return self.__A[1:] 
 
-            
-        
 
-heap  = Heap(list, MODES.MAX) 
+
+list =  [1,2,3,4,7,8,9,10,14,16] 
+
+heap = Heap(list, MODES.MIN)
+
 print(heap)
 
-heap.MAX_HEAP_EXTRACT_MAX()
-heap.MAX_HEAP_INSERT(heap.Node(16,16))
+heap.MIN_HEAP_INSERT(Heap.Node(10,50))
+
+print(heap)
+
+heap.HEAP_SORT(heap.getList(), heap.getSize())
+
+print("Heap Sort")
+print(heap.getSize())
 print(heap)
