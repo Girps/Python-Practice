@@ -136,6 +136,15 @@ class AdjListGraph:
               result += str(self.__V[i]) + ":" + str(self.__E[i]) + "\n"
         return result
     
+    def BFS_PATH(self, s , v):
+        if s is v : 
+            print(s)
+        elif v.pi is None : 
+            print(f"No path {s} to {v}")
+        else: 
+            self.BFS_PATH(s,self.__V[v.pi])
+            print(v)
+
     def BFS(self,s):
         for i in range(1,len(self.__V)):
             if(self.__V[i] is not s): 
@@ -212,8 +221,8 @@ print(G)
 Vertices = G.getVertices()
 
 S = Vertices[1]
-
+V = Vertices[7]
 
 G.BFS(S)
 
-print("BFS complete")
+G.BFS_PATH(S,V)
