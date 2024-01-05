@@ -5,7 +5,7 @@ print("Graph data structure adjancey list")
 
 class Color (Enum) :
      WHITE = 0 
-     GERY = 1 
+     GREY = 1 
      BLACK = 2 
 
 class Direction (Enum):
@@ -136,6 +136,35 @@ class AdjListGraph:
               result += str(self.__V[i]) + ":" + str(self.__E[i]) + "\n"
         return result
     
+    def BFS(self,s):
+        for i in range(1,len(self.__V)):
+            if(self.__V[i] is not s): 
+                self.__V[i].COLOR = Color.WHITE
+                self.__V[i].key = float('inf')
+                self.__V[i].pi = None
+        que = []
+        que.append(s)
+        while ( len(que) != 0 ):
+            u = que.pop()
+            # now check in Adj list 
+            head =  self.__E[u.index]
+            cursor = head.getHead()
+            while (cursor is not None):
+                # turn grey all nodes push them to que
+                i = cursor.v
+                n = self.__V[i]
+                if (n.COLOR == Color.WHITE) :  
+                    n.COLOR = Color.GREY 
+                    n.key = u.key + 1 
+                    n.pi = u.index
+                    que.append(n)
+                cursor = cursor.next 
+            u.COLOR = Color.BLACK
+
+    def getVertices(self):
+        return self.__V
+
+
 
 # Utility function modifies arrays passed into the function 
 def utility(V,E, str):
@@ -179,3 +208,12 @@ utility(V,E,"case2.txt")
 G = AdjListGraph(Direction.UNDIRECTED,V,E)
 
 print(G)
+
+Vertices = G.getVertices()
+
+S = Vertices[1]
+
+
+G.BFS(S)
+
+print("BFS complete")
