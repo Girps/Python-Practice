@@ -18,6 +18,8 @@ class Vertex:
     COLOR = None
     key = None
     pi = None
+    f = None
+
     position = None # 
     def __init__(self, index , Color, key, pi, position): 
         self.index = index
@@ -106,6 +108,7 @@ class LinkedList:
 # Ajs list hold a list of V and E 
 class AdjListGraph: 
 
+    __time = 0
     __V = None
     __E = None
     __D = Direction.DIRECTED
@@ -170,6 +173,32 @@ class AdjListGraph:
                 cursor = cursor.next 
             u.COLOR = Color.BLACK
 
+
+    def DFS(self): 
+        for i in range(1,len(self.__V)): 
+            self.__V[i].COLOR = Color.WHITE
+            self.__V[i].pi = None
+        self.__time = 0
+        for i in range(1,len(self.__V)):
+            if self.__V[i].COLOR == Color.WHITE:
+                self.DFS_VISIT(self.__V[i])
+
+    def DFS_VISIT(self,u):
+        self.__time = self.__time + 1 
+        u.key = self.__time 
+        u.COLOR = Color.GREY
+        # explore adj list of vertex 
+        adj = self.__E[u.index]
+        cursor = adj.getHead()
+        while (cursor is not None):
+            if (self.__V[cursor.v].COLOR == Color.WHITE ):
+                self.__V[cursor.v].pi = u.index
+                self.DFS_VISIT(self.__V[cursor.v])
+            cursor = cursor.next  
+        self.__time = self.__time + 1
+        u.f = self.__time 
+        u.COLOR = Color.BLACK
+
     def getVertices(self):
         return self.__V
 
@@ -223,6 +252,7 @@ Vertices = G.getVertices()
 S = Vertices[1]
 V = Vertices[7]
 
-G.BFS(S)
+G.DFS()
 
-G.BFS_PATH(S,V)
+
+print("DFS operation completed")
